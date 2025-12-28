@@ -25,6 +25,8 @@ const processButton = document.getElementById('process-button');
 const statusMessage = document.getElementById('status-message');
 const progressBar = document.getElementById('progress-bar');
 
+const processPopUp = document.getElementById('process-pop-up');
+
 // 초기화 및 비디오 처리
 processButton.addEventListener('click', async () => {
 
@@ -52,6 +54,7 @@ processButton.addEventListener('click', async () => {
         const ret = await processor.processVideo(fileInput.files);
 
         AnalysisBox.setData(ret);
+        processPopUp.closeAction();
         console.log('비디오 처리가 완료되었습니다.');
 
     } catch (error) {

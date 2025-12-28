@@ -57,9 +57,6 @@ const addTableBoxBtn = document.getElementById('add-table-box-button');
 
 const boxList = new BoxList(document.getElementById("boxes"));
 
-console.log(addVideoBoxBtn);
-console.log(addTableBoxBtn);
-
 function addToolDefault(src, frameMaker, func, toBottom = true) {
     return new Promise((resolve, reject) => {
         boxList.addBoxTemplate(src, () => {
