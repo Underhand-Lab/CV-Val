@@ -1,0 +1,64 @@
+import * as PoseDetector from '../src/pose/pose-detector/index.js';
+import { PoseProcessor } from '../src/pose/processor.js';
+import * as AnalysisBox from './analysis-box.js';
+
+const fileInput = document.getElementById('video-files');
+fileInput.addEventListener('change', () => {
+    processButton.disabled = fileInput.files.length < 1;
+});
+
+const detectorSelect = document.getElementById("model");
+const detectors = {
+    "mediapipe_heavy": new PoseDetector.MediaPipePoseDetector(
+        "../external/models/mediapipe/pose_landmarker_heavy.task"),
+    "mediapipe_full": new PoseDetector.MediaPipePoseDetector(
+        "../external/models/mediapipe/pose_landmarker_full.task"),
+}
+
+const processButton = document.getElementById('process-button');
+const statusMessage = document.getElementById('status-message');
+const progressBar = document.getElementById('progress-bar');
+
+const processPopUp = document.getElementById('process-pop-up');
+
+// 초기화 및 비디오 처리
+processButton.addEventListener('click', async () => {
+
+    // 버튼을 비활성화하여 중복 클릭 방지
+    processButton.disabled = true
+    progressBar.style.width = `0%`;
+
+    // 프로세서 및 탐지기 초기화
+    const processor = new PoseProcessor();
+    const detector = detectors[detectorSelect.value];
+
+    // 프로세서 설정 및 비디오 처리
+    try {
+        processor.setting(detector, {
+            onState: (state) => {
+                statusMessage.textContent = state;
+            },
+            onProgress: (current, total) => {
+                const percentage = (current / total) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+        });
+
+        // data 변수에 모든 처리된 데이터를 저장
+        const ret = await processor.processVideo(fileInput.files);
+
+        AnalysisBox.setData(ret);
+        processPopUp.closeAction();
+        console.log('비디오 처리가 완료되었습니다.');
+
+    } catch (error) {
+
+        alert("비디오 처리 중 오류 발생")
+        console.error("비디오 처리 중 오류 발생:", error);
+
+    } finally {
+        // 처리가 완료되면 버튼을 다시 활성화
+        processButton.disabled = false;
+    }
+
+});

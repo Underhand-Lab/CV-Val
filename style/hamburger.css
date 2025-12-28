@@ -1,0 +1,42 @@
+.hamburger-button {
+    position: relative;
+    float: right;
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+@media (min-width: 768px) {
+
+    .hamburger-button {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .hamburger-button {
+        display: block;
+    }
+
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}   
+
+.hamburger-button .icon-bar {
+    background-color: #ffffff;
+    display: block;
+    width: 22px;
+    height: 3px;
+    border-radius: 1px;
+    margin-top: 5px;
+}

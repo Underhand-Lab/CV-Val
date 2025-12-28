@@ -1,0 +1,36 @@
+#video-files {
+    display: block;
+    margin-top: 5px;
+}
+
+#file-list-info {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+}
+
+.input-section {
+    margin-bottom: 20px;
+    text-align: left;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+input {
+    font-family: 'KBO-Dia-Gothic_medium', Arial, sans-serif;
+    font-size: 16px;
+}
+
+input[type=file] {
+    color: #333;
+}
+
+input[type=file]::file-selector-button{
+    background-color: var(--primary-color);;
+    color: white;
+    font-family: 'KBO-Dia-Gothic_medium', Arial, sans-serif;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+}

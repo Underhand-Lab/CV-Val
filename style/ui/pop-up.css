@@ -1,0 +1,21 @@
+.pop-up {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 90px);
+    max-width: 720px;
+    max-height: 90%;
+    padding: 10px 25px;
+    z-index: 10;
+}
+
+.content ul {
+    list-style-type: circle;
+    list-style-position: inside;
+}
+
+.pop-up-content, .pop-up .content {
+    margin: auto;
+    max-height: calc(72vh - 150px);
+}

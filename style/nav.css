@@ -1,0 +1,93 @@
+nav, .nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--secondary-color);
+    color: #aaaaaa;
+    font-size: 15px;
+    margin: 0;
+    z-index: 20;
+    width: 100%;
+    transition: transform 0.25s ease;
+}
+
+nav.hidden, .nav.hidden {
+    transform: translateY(-100%);
+}
+
+nav > div, .nav > div {
+    display:flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+}
+
+@media screen and (min-width: 360px) {
+    .nav > div { 
+        min-width: 360px;
+        width: 100%;
+        max-width: 10000px;
+    }
+
+}
+
+@media screen and (max-width: 360px) {
+
+    .nav > div { 
+        max-width: 340px;
+        min-width: 200px;
+        
+    }
+}
+
+@media screen and (max-width: 200px) {
+
+    .nav > div { 
+        max-width: 200px;
+        min-width: 0px;
+        
+    }
+
+}
+
+nav h1, .nav h1 {
+    font-weight: normal;
+    font-size: 15px;
+    margin: 15px 15px 7px;
+}
+
+nav ul, .nav ul {
+    margin: 15px 0 2px;
+}
+
+nav h1 a, .nav h1 a {
+    display: inline-block;
+}
+
+nav li, .nav li {
+    display: inline-block;
+    margin: 0 20px;
+    min-width: 40px;
+    padding: 0;
+}
+
+nav a::after, .nav a::after {
+    content: " ";
+    display: block;
+    width: 0px;
+    height: 4px;
+    background-color: var(--primary-color);
+    margin: 2px auto 3px;
+    padding: 0;
+    transition: width 0.3s ease;
+    
+}
+
+nav a:hover::after, .nav a:hover::after {
+    width: min(100%, 30px);
+}
+
+nav a[select="true"], .nav a[select="true"] {
+    color: var(--primary-color);
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana-Vis | Track</title>
+
+    <link rel="stylesheet" href="../style/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.1/dist/ffmpeg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="../src/easy-h/ui/pop-up.js" type="module"></script>
+
+    <script defer src="./track.js" type="module"></script>
+    <script src="../src/markdown.js"></script>
+
+</head>
+
+<body>
+    <div class="nav">
+        <div>
+            <div style="flex-grow: 1">
+                <h1><a href="../">Ana-Vis</a></h1>
+            </div>
+            <div style="flex-grow: 1">
+                <ul>
+                    <li>
+                        <a href="../pose">자세 분석</a>
+                    </li>
+                    <li>
+                        <a select="true" href="../track">추적</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="wrapper">
+        <div>
+            <div id="boxes"></div>
+        </div>
+        <div id="download-section" style="display: none;">
+            <a id="download-link" href="#" download="processed_data.json">처리된 데이터 다운로드</a>
+        </div>
+    </div>
+
+    <div class="slider">
+        <div class="container neumorphism">
+            <input type="range" id="frameSlider" min="0" value="0">
+            <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
+                <div style="flex-grow: 1;text-align: left;line-height: 42px;white-space: nowrap;">
+                    <button id="open-process-pop-up">분석</button>
+                    <label for="confInput">CONF: </label>
+                    <input type="number" pattern="\d*" inputmode="decimal" id="confInput" value="0.01" min="0" max="1"
+                        step="0.01">
+                </div>
+                <div style="text-align: right;white-space: nowrap;">
+                    <button id="open-guide-button">도움말</button>
+                    <button id="add-box-button">도구 추가</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <pop-up id="process-pop-up" open="open" background-class="panel frostedglassmorphism"
+        window-class="pop-up container neumorphism" trigger-id="open-process-pop-up">
+        <h1>새로운 동영상 처리</h1>
+        <hr>
+        <div>
+
+            <div class="input-section">
+                <div style="flex-grow: 1;">
+                    <input type="file" id="video-files" multiple accept="video/*">
+                </div>
+                <div style="text-align: left;">
+                    <label for="model">모델: </label>
+                    <select id="model" name="model">
+                        <option value="yolo11x">yolo11x</option>
+                        <option value="yolo11l">yolo11l</option>
+                        <option value="yolo11m" selected>yolo11m</option>
+                        <option value="yolo11s">yolo11s</option>
+                        <option value="yolo11n">yolo11n</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="process-button" disabled>처리 시작</button>
+
+            <div id="status-section">
+                <p id="status-message">처리전</p>
+                <div id="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <button class="close-btn">취소</button>
+    </pop-up>
+    <pop-up id="guide" open="close"
+        background-class="panel frostedglassmorphism"
+        window-class="pop-up container neumorphism"
+        trigger-id="open-guide-button">
+        <h1>도움말</h1>
+        <hr>
+        <div class="content text-left">
+            <div class="scrolled-content markdown-container " data-markdown-file="./guide.md">
+            </div>
+        </div>
+        <hr>
+        <button class="close-btn">닫기</button>
+    </pop-up>
+
+    <pop-up id="analysis" open="close"
+        background-class="panel frostedglassmorphism"
+        trigger-id="add-box-button">
+        <div class="pop-up container neumorphism"
+            style="max-width: 300px;">
+            <h1>분석 도구</h1>
+            <hr>
+            <button id="add-video-box-button">동영상</button>
+            <br>
+            <button id="add-table-box-button">표</button>
+            <hr>
+            <button class="close-btn">취소</button>
+        </div>
+    </pop-up>
+
+</body>
+
+</html>
