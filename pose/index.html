@@ -12,25 +12,25 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.1/dist/ffmpeg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!--script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script-->
 
     <script type="importmap">
     {
         "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
-        "three/": "https://cdn.jsdelivr.net/npm/three@0.128.0/"
-        }
+            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
+            "three/": "https://cdn.jsdelivr.net/npm/three@0.128.0/"
+            }
     }
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="/src/markdown.js"></script>
+    <script src="../src/common.js" type="module"></script>
     <script src="./pose.js" type="module" defer></script>
 
 </head>
 
 <body>
-    <div class="nav">
+    <nav>
         <div>
             <div style="flex-grow: 1">
                 <h1><a href="../">CV-Val</a></h1>
@@ -46,7 +46,7 @@
                 </ul>
             </div>
         </div>
-    </div>
+    </nav>
 
     <div id="wrapper">
         <div>
