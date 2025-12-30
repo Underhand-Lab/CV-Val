@@ -3,30 +3,27 @@ import * as BallDetector from '../src/track/ball-detector/index.js';
 
 const detectorSelect = document.getElementById("model");
 const detectors = {
-    "yolo11x": new BallDetector.YOLOBallDetector(
+    "yolo11x": new BallDetector.YOLOLiveBallDetector(
         "../external/models/yolo11/yolo11x_web_model/model.json"),
-    "yolo11l": new BallDetector.YOLOBallDetector(
+    "yolo11l": new BallDetector.YOLOLiveBallDetector(
         "../external/models/yolo11/yolo11l_web_model/model.json"),
-    "yolo11m": new BallDetector.YOLOBallDetector(
+    "yolo11m": new BallDetector.YOLOLiveBallDetector(
         "../external/models/yolo11/yolo11m_web_model/model.json"),
-    "yolo11s": new BallDetector.YOLOBallDetector(
+    "yolo11s": new BallDetector.YOLOLiveBallDetector(
         "../external/models/yolo11/yolo11s_web_model/model.json"),
-    "yolo11n": new BallDetector.YOLOBallDetector(
+    "yolo11n": new BallDetector.YOLOLiveBallDetector(
         "../external/models/yolo11/yolo11n_web_model/model.json")
 }
 
-let detector = detectors[detectorSelect.value];
+let detector;
+
 let isPlay = false;
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 const retCanvas = document.querySelector('canvas');
 const retCtx = retCanvas.getContext('2d');
-
-// 1. 모델 초기화 (페이지 로드 시 미리 실행)
-async function init() {
-    await detector.initialize();
-}
-init();
+const conf = document.querySelector('#confInput');
+let confValue = 0.5;
 
 // 2. 루프 함수
 let currentResult = null; // 가장 최신의 분석 결과를 저장할 변수
@@ -34,6 +31,7 @@ let isAnalyzing = false;
 
 // 결과 시각화 함수
 function drawBBox(bbox, conf) {
+    if (conf < confValue) return;
     const [x, y, w, h] = bbox;
     retCtx.strokeStyle = "#00FF00";
     retCtx.lineWidth = 3;
@@ -62,9 +60,9 @@ async function processLoop() {
         // 1. 배경 영상 그리기
         retCtx.drawImage(webcam.video, 0, 0, retCanvas.width, retCanvas.height);
 
+        console.log(currentResult);
         // 2. 저장된 최신 결과 박스 그리기
         if (currentResult) {
-            console.log(currentResult);
             drawBBox(currentResult.bbox, currentResult.confidence);
         }
 
@@ -96,9 +94,17 @@ async function runAnalysis(videoElement) {
 retCanvas.addEventListener('click', async () => {
     if (isPlay) {
         isPlay = false;
+        document.querySelector('nav').classList.remove("hidden");
+        document.querySelector('.slider').style.display = "block";
         webcam.stopCamera();
     } else {
         isPlay = true;
+        document.querySelector('nav').classList.add("hidden");
+        document.querySelector('.slider').style.display = "none";
+        confValue = parseFloat(conf.value);
+        
+        detector = detectors[detectorSelect.value];
+        await detector.initialize();
         await webcam.startCamera();
         processLoop(); // 루프 시작
     }

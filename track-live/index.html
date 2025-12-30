@@ -12,8 +12,7 @@
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.1/dist/ffmpeg.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <script src="../src/common.js" type="module"></script>
+    
     <script src="../src/markdown.js"></script>
     <script src="../src/easy-h/ui/pop-up.js" type="module"></script>
     <script src="../src/easy-h/lang/component.js" type="module"></script>
@@ -25,7 +24,7 @@
 </head>
 
 <body>
-    <nav style="display:none; position:fixed;">
+    <nav style="position:fixed;">
         <div>
             <div style="flex-grow: 1">
                 <h1><a href="../">CV-Val</a></h1>
@@ -51,7 +50,7 @@
         <canvas style="background-color:black;width:100%;height:95vh;" autoplay playsinline muted></canvas>
     </div>
 
-    <div class="slider" style="display:none; position:fixed;">
+    <div class="slider" style="position:fixed;">
         <div class="container neumorphism">
             <input type="range" id="frameSlider" min="0" value="0">
             <div style="display:flex; flex-wrap: nowrap;gap:10px;overflow-x:auto;">
@@ -65,8 +64,8 @@
                         <option value="yolo11x">yolo11x</option>
                         <option value="yolo11l">yolo11l</option>
                         <option value="yolo11m">yolo11m</option>
-                        <option value="yolo11s">yolo11s</option>
-                        <option value="yolo11n" selected>yolo11n</option>
+                        <option value="yolo11s" selected>yolo11s</option>
+                        <option value="yolo11n">yolo11n</option>
                     </select>
                     <label for="confInput">CONF: </label>
                     <input type="number" pattern="\d*" inputmode="decimal" id="confInput" value="0.01" min="0" max="1"

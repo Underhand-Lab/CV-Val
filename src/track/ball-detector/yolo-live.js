@@ -1,9 +1,14 @@
-export class YOLOBallDetector {
-    
+export class YOLOLiveBallDetector {
+
     constructor(weightURL) {
         this.weightURL = weightURL;
-        // 내부 캔버스는 패딩(레터박스) 처리가 필요할 때만 제한적으로 사용합니다.
         this.offscreenCanvas = document.createElement('canvas');
+        this.detector = null;
+        
+        // --- 다중 히스토리 관리 ---
+        this.prevCandidates = []; // 이전 프레임의 후보군 배열
+        this.trackingWeight = 0.35; // 가중치 비중
+        this.historyThreshold = 0.25; // 히스토리에 저장할 최소 신뢰도
     }
 
     async initialize() {
@@ -74,38 +79,72 @@ export class YOLOBallDetector {
         const originalSize = Math.max(originalWidth, originalHeight);
         const scale = originalSize / 640;
 
-        // [1, 84, 8400] -> [1, 8400, 84] 전치
         const transposedTensor = tf.transpose(outputTensor, [0, 2, 1]);
         const detections = await transposedTensor.array();
+        const [allDetections] = detections;
 
         let bestBallInfo = null;
-        let highestConf = -1;
-        const classIdToFilter = 32; // 야구공 클래스 ID
+        let highestFinalScore = -1;
+        const currentCandidates = []; // 이번 프레임에서 발견된 후보들을 담을 배열
+        const classIdToFilter = 32;
 
-        const [allDetections] = detections;
+        const maxDiagonal = Math.sqrt(Math.pow(originalWidth, 2) + Math.pow(originalHeight, 2));
 
         for (const detection of allDetections) {
             const [x, y, width, height, ...classProbs] = detection;
             const maxProb = Math.max(...classProbs);
-
             const classId = classProbs.indexOf(maxProb);
+
             if (classId !== classIdToFilter) continue;
-            if (maxProb < highestConf) continue;
 
-            highestConf = maxProb;
+            let finalScore = maxProb;
 
-            // YOLO 중심점 좌표 -> 좌상단 좌표 변환
+            // --- 모든 이전 후보들과 비교하여 최대 가중치 탐색 ---
+            if (this.prevCandidates.length > 0) {
+                let maxBonus = 0;
+                const currX = x * scale;
+                const currY = y * scale;
+
+                for (const prev of this.prevCandidates) {
+                    const prevX = prev.bbox[0] + prev.bbox[2] / 2;
+                    const prevY = prev.bbox[1] + prev.bbox[3] / 2;
+
+                    const distance = Math.sqrt(Math.pow(currX - prevX, 2) + Math.pow(currY - prevY, 2));
+                    const proximity = Math.max(0, 1 - (distance / (maxDiagonal * 0.12))); // 근접성 점수
+
+                    // 이전 후보의 신뢰도가 높을수록 더 큰 보너스 부여
+                    const bonus = proximity * prev.confidence * this.trackingWeight;
+                    if (bonus > maxBonus) maxBonus = bonus;
+                }
+                finalScore += maxBonus;
+            }
+
             const x1 = (x - width / 2) * scale;
             const y1 = (y - height / 2) * scale;
             const scaledW = width * scale;
             const scaledH = height * scale;
 
-            bestBallInfo = {
+            const currentCandidate = {
                 bbox: [x1, y1, scaledW, scaledH],
-                confidence: highestConf,
+                confidence: maxProb,
+                finalScore: finalScore,
                 classId: classId
             };
+
+            // 히스토리에 저장 (일정 수준 이상인 것들만)
+            if (maxProb > this.historyThreshold) {
+                currentCandidates.push(currentCandidate);
+            }
+
+            // 화면에 그릴 최종 'Best' 선정
+            if (finalScore > highestFinalScore) {
+                highestFinalScore = finalScore;
+                bestBallInfo = currentCandidate;
+            }
         }
+
+        // 히스토리 교체 (현재 후보들이 다음 프레임의 이전 후보가 됨)
+        this.prevCandidates = currentCandidates;
 
         transposedTensor.dispose();
         return bestBallInfo;

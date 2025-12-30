@@ -9,7 +9,18 @@ export async function startCamera() {
         // 이미 스트림이 있다면 중복 실행 방지
         if (localStream) return;
 
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        localStream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                facingMode: 'environment',
+                width: {ideal: 640},
+                height: {ideal: 640},
+                frameRate: {
+                    ideal: 60,
+                    max: 120
+                }
+            }
+        });
         video.srcObject = localStream;
     } catch (err) {
         console.error("에러 발생:", err);
