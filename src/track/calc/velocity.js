@@ -42,7 +42,7 @@ function calcAngle(ballData1, ballData2) {
     const angle = Math.atan2(dist_y, dist_x) * 180 / Math.PI;
 
     return -angle;
-
+    
 }
 
 export { calcVelocity, calcAngle }

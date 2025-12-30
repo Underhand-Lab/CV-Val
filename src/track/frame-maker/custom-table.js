@@ -41,7 +41,7 @@ class CustomTableFrameMaker {
                 d[key] = null;
                 continue;
             }
-            d[key] = this.data[key][idx].toFixed(2);
+            d[key] = this.data[key][idx] ? this.data[key][idx].toFixed(2) : "?";
         }
 
         this.table.setData(d);

@@ -3,7 +3,9 @@ import * as Calc from "./velocity.js"
 
 class BallAnalysisTool {
     calc(data) {
-
+        
+        if (!data) return;
+        
         let tableData = {
             "속도(km/h)": [ null ],
             "각도(도)": [ null ],
@@ -20,8 +22,8 @@ class BallAnalysisTool {
                 data["ballData"][i - 1],
                 data["ballData"][i]));
             
-            const conf1 = data["ballData"][i - 1]["confidence"];
-            const conf2 = data["ballData"][i]["confidence"];
+            const conf1 = data["ballData"][i - 1] ? data["ballData"][i - 1]["confidence"] : 0;
+            const conf2 = data["ballData"][i] ? data["ballData"][i]["confidence"] : 0;
 
             tableData["confidence"].push(conf1 > conf2 ? conf2 : conf1);
         }

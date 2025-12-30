@@ -69,58 +69,47 @@ export class FFMPEGVideoConverter {
     }
 
     async convert(file) {
-
-        if (!file) {
-            throw new Error('비디오 파일이 없습니다.');
-        }
-
-        if (!this.isLoaded) {
-            await this.load();
-        }
+        if (!file) throw new Error('비디오 파일이 없습니다.');
+        if (!this.isLoaded) await this.load();
 
         const outputFileName = 'output_%d.png';
         const inputFileName = file.name;
 
-        // 1. FFmpeg 가상 파일 시스템에 파일 쓰기
-        this.ffmpeg.FS('writeFile', inputFileName,
-            await fetchFile(file));
-
+        this.ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
         try {
-            // 2. FFmpeg 명령 실행
-            await this.ffmpeg.run(
-                '-i', inputFileName,
-                outputFileName
-            );
-
+            await this.ffmpeg.run('-i', inputFileName, outputFileName);
         } catch (error) {
-
+            // status가 0이면 정상 종료이므로 에러 로그를 찍지 않고 넘어감
+            if (error.status !== 0) {
+                console.error("FFmpeg 실제 에러 발생:", error);
+                throw error;
+            }
         }
 
-        // 3. 추출된 이미지 파일 목록 가져오기
-        const fileNames = this.ffmpeg.FS('readdir', '/').filter((f) => f.startsWith('output_'));
+        const fileNames = this.ffmpeg.FS('readdir', '/')
+            .filter((f) => f.startsWith('output_'))
+            .sort((a, b) => { // 파일명 정렬 (output_1, output_2...)
+                const numA = parseInt(a.match(/\d+/)[0]);
+                const numB = parseInt(b.match(/\d+/)[0]);
+                return numA - numB;
+            });
 
-        const imageList = [];
-
+        const bitmapList = [];
         for (const fileName of fileNames) {
             const data = this.ffmpeg.FS('readFile', fileName);
-            const blob = new Blob([data.buffer],
-                { type: 'image/png' });
-            const url = URL.createObjectURL(blob);
-            const img = new Image();
+            const blob = new Blob([data.buffer], { type: 'image/png' });
 
-            img.src = url;
-            await new Promise(resolve => img.onload = resolve);
-            imageList.push(img);
-            
-            URL.revokeObjectURL(url);
-            await new Promise(resolve => setTimeout(resolve, 0));
+            // Canvas를 생성하지 않고 ImageBitmap을 바로 생성 (메인 스레드 부하 최소화)
+            const bitmap = await createImageBitmap(blob);
+            bitmapList.push(bitmap);
         }
 
-        // 4. 가상 파일 시스템 정리
+
+        // 정리
         this.ffmpeg.FS('unlink', inputFileName);
         fileNames.forEach(f => this.ffmpeg.FS('unlink', f));
 
-        return imageList;
+        return bitmapList; // ImageBitmap 배열 반환
 
     }
 
