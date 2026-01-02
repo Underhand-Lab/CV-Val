@@ -3,11 +3,11 @@ import * as BallDetector from '../../src/cv-val/track/ball-detector/index.js';
 import * as Calc from "../../src/cv-val/track/calc/velocity.js";
 
 const detectors = {
-    "yolo11x": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11x_web_model/model.json"),
-    "yolo11l": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11l_web_model/model.json"),
-    "yolo11m": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11m_web_model/model.json"),
-    "yolo11s": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11s_web_model/model.json"),
-    "yolo11n": new BallDetector.YOLOLiveBallDetector("../../../external/models/yolo11/yolo11n_web_model/model.json")
+    "yolo11x": new BallDetector.YOLOLiveBallDetector("../../external/models/yolo11/yolo11x_web_model/model.json"),
+    "yolo11l": new BallDetector.YOLOLiveBallDetector("../../external/models/yolo11/yolo11l_web_model/model.json"),
+    "yolo11m": new BallDetector.YOLOLiveBallDetector("../../external/models/yolo11/yolo11m_web_model/model.json"),
+    "yolo11s": new BallDetector.YOLOLiveBallDetector("../../external/models/yolo11/yolo11s_web_model/model.json"),
+    "yolo11n": new BallDetector.YOLOLiveBallDetector("../../external/models/yolo11/yolo11n_web_model/model.json")
 }
 
 const detectorSelect = document.getElementById("model");
