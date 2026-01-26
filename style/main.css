@@ -159,7 +159,7 @@ th {
 }
 
 #process-button:hover:not(:disabled) {
-    background-color: var(--secondary-color);
+    color: var(--secondary-color);
 }
 
 #status-section {
