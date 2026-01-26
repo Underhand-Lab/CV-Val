@@ -79,18 +79,33 @@ export class TrackFrameMaker {
         }
         return (top && bottom) ? { top, bottom } : null;
     }
-
     masking(pixelData, prevMask, currMask, threshold, color, maskW, maskH) {
         this.applyMaskToBuffer(pixelData, prevMask, threshold, color, maskW, maskH);
         this.applyMaskToBuffer(pixelData, currMask, threshold, color, maskW, maskH);
+
         const ptsA = this.getMaskMinMaxY(prevMask, threshold);
         const ptsB = this.getMaskMinMaxY(currMask, threshold);
+
         if (ptsA && ptsB) {
-            const poly = [ptsA.top, ptsB.top, ptsB.bottom, ptsA.bottom];
-            this.fillQuadrilateral(pixelData, poly, color, maskW, maskH);
+            // 1. 네 개의 점을 하나의 배열로 모읍니다.
+            const points = [ptsA.top, ptsA.bottom, ptsB.top, ptsB.bottom];
+
+            // 2. 무게 중심(Centroid) 계산
+            const center = {
+                x: points.reduce((p, c) => p + c.x, 0) / 4,
+                y: points.reduce((p, c) => p + c.y, 0) / 4
+            };
+
+            // 3. 무게 중심 기준 각도(Math.atan2)로 정렬하여 꼬임 방지
+            const sortedPoints = points.sort((a, b) => {
+                return Math.atan2(a.y - center.y, a.x - center.x) -
+                    Math.atan2(b.y - center.y, b.x - center.x);
+            });
+
+            // 4. 정렬된 순서로 다각형 그리기
+            this.fillQuadrilateral(pixelData, sortedPoints, color, maskW, maskH);
         }
     }
-
     drawImageAt(idx) {
         if (!this.trackData || !this.instance || idx < 0) return;
 
@@ -140,8 +155,8 @@ export class TrackFrameMaker {
                 const prev = batList[i - 1];
                 const curr = batList[i];
                 if (prev?.maskConfidenceMap && curr?.maskConfidenceMap) {
-                    this.masking(pixelBuffer, prev.maskConfidenceMap, curr.maskConfidenceMap, 
-                                 this.conf, [0, 255, 0, 100], maskW, maskH);
+                    this.masking(pixelBuffer, prev.maskConfidenceMap, curr.maskConfidenceMap,
+                        this.conf, [0, 255, 0, 100], maskW, maskH);
                 }
             }
 
