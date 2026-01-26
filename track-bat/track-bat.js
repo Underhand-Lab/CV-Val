@@ -11,15 +11,15 @@ fileInput.addEventListener('change', () => {
 const detectorSelect = document.getElementById("model");
 const detectors = {
     "yolo11x": new BatDetector.YOLOBatDetector(
-        "../external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
+        "../external/models/yolo11/yolo11x-seg_web_model/model.json", 34),
     "yolo11l": new BatDetector.YOLOBatDetector(
-        "../external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
+        "../external/models/yolo11/yolo11l-seg_web_model/model.json", 34),
     "yolo11m": new BatDetector.YOLOBatDetector(
         "../external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
     "yolo11s": new BatDetector.YOLOBatDetector(
-        "../external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
+        "../external/models/yolo11/yolo11s-seg_web_model/model.json", 34),
     "yolo11n": new BatDetector.YOLOBatDetector(
-        "../external/models/yolo11/yolo11m-seg_web_model/model.json", 34),
+        "../external/models/yolo11/yolo11n-seg_web_model/model.json", 34),
     "yolo26n": new BatDetector.YOLOBatDetector(
         "../external/models/yolo11/yolo11m-seg_web_model/model.json", 34)
 }
