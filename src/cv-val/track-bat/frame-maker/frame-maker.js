@@ -30,42 +30,44 @@ export class TrackFrameMaker {
         // 1. 배경 이미지 렌더링
         this.renderer.drawImage(image);
 
-        // 2. 마스크 레이어 생성 및 합성
-        const batList = this.trackData.getBatList();
-        const maskLayer = this._generateMaskLayer(idx, batList);
+        // 2. 마스크 레이어 생성 (getSelectedBatAt 활용)
+        const maskLayer = this._generateMaskLayer(idx);
         if (maskLayer) {
             this.renderer.drawLayer(maskLayer);
         }
     }
 
-    _generateMaskLayer(idx, batList) {
-        const firstBat = batList.find(b => b && b.maskConfidenceMap);
-        if (!firstBat) return null;
+    _generateMaskLayer(idx) {
+        // 마스크 해상도 파악을 위한 샘플 데이터 획득
+        let sampleBat = null;
+        for (let i = idx; i >= 0; i--) {
+            sampleBat = this.trackData.getSelectedBatAt(i);
+            if (sampleBat?.maskConfidenceMap) break;
+        }
+        if (!sampleBat) return null;
 
-        const maskW = firstBat.maskConfidenceMap[0].length;
-        const maskH = firstBat.maskConfidenceMap.length;
+        const maskW = sampleBat.maskConfidenceMap[0].length;
+        const maskH = sampleBat.maskConfidenceMap.length;
 
-        // 버퍼 최적화: 크기 변경 시에만 재생성
         if (this.offscreenCanvas.width !== maskW || this.offscreenCanvas.height !== maskH) {
             this.offscreenCanvas.width = maskW;
             this.offscreenCanvas.height = maskH;
             this.cachedImageData = this.offscreenCtx.createImageData(maskW, maskH);
         }
 
-        // 버퍼 초기화 및 픽셀 연산
         this.cachedImageData.data.fill(0);
         const pixelBuffer = this.cachedImageData.data;
         const startIdx = Math.max(1, idx - this.trail + 1);
 
         for (let i = startIdx; i <= idx; i++) {
-            const prev = batList[i - 1];
-            const curr = batList[i];
+            const prev = this.trackData.getSelectedBatAt(i - 1);
+            const curr = this.trackData.getSelectedBatAt(i);
+            
             const alpha = Math.floor(((i - startIdx + 1) / (idx - startIdx + 1)) * 50) + 75;
             this.masking(pixelBuffer, prev, curr, this.conf, [0, 255, 0, alpha], maskW, maskH);
         }
 
-        // 현재 위치 강조
-        const nowBat = batList[idx];
+        const nowBat = this.trackData.getSelectedBatAt(idx);
         if (nowBat?.maskConfidenceMap) {
             this.applyMaskToBuffer(pixelBuffer, nowBat.maskConfidenceMap, this.conf, [255, 128, 0, 180], maskW, maskH);
         }
@@ -81,11 +83,18 @@ export class TrackFrameMaker {
         if (currBat?.maskConfidenceMap) {
             this.applyMaskToBuffer(pixelData, currBat.maskConfidenceMap, threshold, color, maskW, maskH);
         }
+        
+        // 두 마스크 사이의 공간을 8개의 점으로 연결하여 채움
         if (prevBat?.maskConfidenceMap && currBat?.maskConfidenceMap) {
-            const ptsA = this.getMaskMinMaxY(prevBat.maskConfidenceMap, threshold);
-            const ptsB = this.getMaskMinMaxY(currBat.maskConfidenceMap, threshold);
-            if (ptsA && ptsB) {
-                this.fillQuadrilateral(pixelData, [ptsA.top, ptsA.bottom, ptsB.top, ptsB.bottom], color, maskW, maskH);
+            const vA = this.getMaskVertices(prevBat.maskConfidenceMap, threshold);
+            const vB = this.getMaskVertices(currBat.maskConfidenceMap, threshold);
+            
+            if (vA && vB) {
+                const points = [
+                    vA.topLeft, vA.topRight, vA.bottomRight, vA.bottomLeft,
+                    vB.topLeft, vB.topRight, vB.bottomRight, vB.bottomLeft
+                ];
+                this.fillPolygon(pixelData, points, color, maskW, maskH);
             }
         }
     }
@@ -106,32 +115,63 @@ export class TrackFrameMaker {
         }
     }
 
-    getMaskMinMaxY(maskMap, threshold) {
+    /**
+     * 상단과 하단에서 각각 좌우 끝점 2개씩, 총 4개의 정점을 추출합니다.
+     */
+    getMaskVertices(maskMap, threshold) {
         if (!maskMap || maskMap.length === 0) return null;
         const rows = maskMap.length, cols = maskMap[0].length;
-        let top = null, bottom = null;
+        
+        let topLeft = null, topRight = null;
+        let bottomLeft = null, bottomRight = null;
+
+        // 상단 영역 포인트 탐색
         for (let y = 0; y < rows; y++) {
+            let foundInRow = false;
             for (let x = 0; x < cols; x++) {
-                if (maskMap[y][x] >= threshold) { top = { x, y }; break; }
+                if (maskMap[y][x] >= threshold) {
+                    if (!topLeft || x < topLeft.x) topLeft = { x, y };
+                    if (!topRight || x > topRight.x) topRight = { x, y };
+                    foundInRow = true;
+                }
             }
-            if (top) break;
+            // 상단 정점이 어느 정도 잡히면 루프 종료 (두께 확보)
+            if (topLeft && y > topLeft.y + 3) break;
         }
+
+        // 하단 영역 포인트 탐색
         for (let y = rows - 1; y >= 0; y--) {
+            let foundInRow = false;
             for (let x = 0; x < cols; x++) {
-                if (maskMap[y][x] >= threshold) { bottom = { x, y }; break; }
+                if (maskMap[y][x] >= threshold) {
+                    if (!bottomLeft || x < bottomLeft.x) bottomLeft = { x, y };
+                    if (!bottomRight || x > bottomRight.x) bottomRight = { x, y };
+                    foundInRow = true;
+                }
             }
-            if (bottom) break;
+            if (bottomLeft && y < bottomLeft.y - 3) break;
         }
-        return (top && bottom) ? { top, bottom } : null;
+
+        return (topLeft && bottomRight) ? { topLeft, topRight, bottomLeft, bottomRight } : null;
     }
 
-    fillQuadrilateral(pixelData, points, color, canvasW, canvasH) {
+    /**
+     * 전달된 점들을 볼록 다각형으로 정렬하여 내부를 채웁니다.
+     */
+    fillPolygon(pixelData, points, color, canvasW, canvasH) {
+        const validPoints = points.filter(p => p !== null);
+        if (validPoints.length < 3) return;
 
-        const sortedPoints = this._getSortedPoints(points);
-        let minX = Math.max(0, Math.floor(Math.min(...points.map(p => p.x))));
-        let maxX = Math.min(canvasW - 1, Math.ceil(Math.max(...points.map(p => p.x))));
-        let minY = Math.max(0, Math.floor(Math.min(...points.map(p => p.y))));
-        let maxY = Math.min(canvasH - 1, Math.ceil(Math.max(...points.map(p => p.y))));
+        // 중심점 기준 각도 정렬 (Convex Hull 구성)
+        const center = validPoints.reduce((acc, p) => ({ x: acc.x + p.x / validPoints.length, y: acc.y + p.y / validPoints.length }), { x: 0, y: 0 });
+        const sortedPoints = validPoints.sort((a, b) => {
+            return Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x);
+        });
+
+        let minX = Math.max(0, Math.floor(Math.min(...sortedPoints.map(p => p.x))));
+        let maxX = Math.min(canvasW - 1, Math.ceil(Math.max(...sortedPoints.map(p => p.x))));
+        let minY = Math.max(0, Math.floor(Math.min(...sortedPoints.map(p => p.y))));
+        let maxY = Math.min(canvasH - 1, Math.ceil(Math.max(...sortedPoints.map(p => p.y))));
 
         for (let y = minY; y <= maxY; y++) {
             for (let x = minX; x <= maxX; x++) {
@@ -144,16 +184,6 @@ export class TrackFrameMaker {
                 }
             }
         }
-    }
-
-    _getSortedPoints(points) {
-        const base = [...points].sort((a, b) => a.y - b.y || a.x - b.x)[0];
-        return points.sort((a, b) => {
-            if (a === base) return -1;
-            if (b === base) return 1;
-            const cp = (a.x - base.x) * (b.y - base.y) - (a.y - base.y) * (b.x - base.x);
-            return cp > 0 ? -1 : cp < 0 ? 1 : (Math.hypot(a.x-base.x, a.y-base.y) - Math.hypot(b.x-base.x, b.y-base.y));
-        });
     }
 
     isPointInPolygon(poly, x, y) {
