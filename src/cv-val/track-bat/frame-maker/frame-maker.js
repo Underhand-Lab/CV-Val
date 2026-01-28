@@ -60,7 +60,7 @@ export class TrackFrameMaker {
         for (let i = startIdx; i <= idx; i++) {
             const prev = batList[i - 1];
             const curr = batList[i];
-            const alpha = Math.floor(((i - startIdx + 1) / (idx - startIdx + 1)) * 100);
+            const alpha = Math.floor(((i - startIdx + 1) / (idx - startIdx + 1)) * 50) + 75;
             this.masking(pixelBuffer, prev, curr, this.conf, [0, 255, 0, alpha], maskW, maskH);
         }
 
