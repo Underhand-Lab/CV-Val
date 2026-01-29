@@ -71,9 +71,6 @@
                     </button>
                 </div>
                 <div style="text-align: right;white-space: nowrap;">
-                    <button id="open-guide-button">
-                        <e-text key="btn-open-guide"></e-text>
-                    </button>
                     <button id="add-box-button">
                         <e-text key="btn-add-tool"></e-text>
                     </button>
@@ -85,10 +82,8 @@
         </div>
     </div>
 
-    <pop-up id="process-pop-up" open="open"
-        background-class="panel frostedglassmorphism"
-        window-class="pop-up container neumorphism"
-        trigger-id="open-process-pop-up">
+    <pop-up id="process-pop-up" open="open" background-class="panel frostedglassmorphism"
+        window-class="pop-up container neumorphism" trigger-id="open-process-pop-up">
         <h1>
             <e-text key="label-process-new-video"></e-text>
         </h1>
@@ -117,8 +112,7 @@
 
             <div id="status-section">
                 <p>
-                    <e-text id="status-message"
-                        key="label-before-process">
+                    <e-text id="status-message" key="label-before-process">
                     </e-text>
                     <b id="progress-text"></b>
                 </p>
@@ -128,15 +122,16 @@
             </div>
         </div>
         <hr>
+        <button id="open-guide-button">
+            <e-text key="btn-open-guide"></e-text>
+        </button>
         <button class="close-btn">
             <e-text key="btn-close">
             </e-text>
         </button>
     </pop-up>
-    <pop-up id="guide" open="close"
-        background-class="panel frostedglassmorphism"
-        window-class="pop-up container neumorphism"
-        trigger-id="open-guide-button">
+    <pop-up id="guide" open="close" background-class="panel frostedglassmorphism"
+        window-class="pop-up container neumorphism" trigger-id="open-guide-button">
         <h1>
             <e-text key="label-guide"></e-text>
         </h1>
@@ -152,12 +147,10 @@
         </button>
     </pop-up>
 
-    <pop-up id="analysis" open="close"
-        background-class="panel frostedglassmorphism"
-        trigger-id="add-box-button" style="max-width: 300px;">
-            
-        <div class="pop-up container neumorphism"
-            style="max-width: 300px;">
+    <pop-up id="analysis" open="close" background-class="panel frostedglassmorphism" trigger-id="add-box-button"
+        style="max-width: 300px;">
+
+        <div class="pop-up container neumorphism" style="max-width: 300px;">
             <h1>
                 <e-text key="label-add-tool"></e-text>
             </h1>
